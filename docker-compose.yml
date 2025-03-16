@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - currency-conversion-service
+      - currency-exchange-service
+      - naming-server
+      - zipkin
+      - rabbitmq
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://naming-server:8761/eureka/
+      - SPRING_ZIPKIN_BASEURL=http://localhost:9411/
+      - SPRING_ZIPKIN_SENDER_TYPE:rabbit
+      - SPRING_RABBITMQ_HOST:rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+    networks:
+      - microservices-network
+
+  # Currency Exchange Service
+  currency-exchange-service:
+    build: ./currency-exchange-services
+    ports:
+      - "8089:8089"
+    depends_on:
+      - naming-server
+      - rabbitmq
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://naming-server:8761/eureka/
+      - SPRING_ZIPKIN_BASEURL=http://localhost:9411/
+      - SPRING_ZIPKIN_SENDER_TYPE:rabbit
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+    networks:
+      - microservices-network
+
+
+  # Currency Conversion Service
+  currency-conversion-service:
+    build: ./currency-conversion-services
+    ports:
+      - "8100:8100"
+      - "5006:5006"
+    depends_on:
+      - naming-server
+      - rabbitmq
+      - currency-exchange-service
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://naming-server:8761/eureka/
+      - SPRING_ZIPKIN_BASEURL=http://localhost:9411/
+      - SPRING_ZIPKIN_SENDER_TYPE:rabbit
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+    networks:
+      - microservices-network
+
+
+  # Naming Server (Eureka)
+  naming-server:
+    build: ./naming-server
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+
+  # Zipkin
+  zipkin:
+    image: openzipkin/zipkin:latest
+    ports:
+      - "9411:9411"  # Zipkin UI için port
+    networks:
+      - microservices-network
+
+  # RabbitMQ Service
+  rabbitmq:
+    image: rabbitmq:3.9.14-management
+    ports:
+      - "5672:5672"   # RabbitMQ mesaj kuyruğu portu
+      - "15672:15672" # RabbitMQ yönetim paneli portu
+    networks:
+      - microservices-network
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: always
+
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+    driver: local
+
