@@ -107,3 +107,63 @@ Run the following command to build the Docker images and start the services:
 ```bash
 docker-compose up --build
 ```
+### 8. **Verify the Services**
+
+After running Docker Compose, you can verify that the services are running correctly by visiting the following test URLs in your browser or using tools like Postman or `curl`.
+
+#### 🔗 Service URLs
+
+- **Eureka Server (Service Discovery)**  
+  [http://localhost:8761/](http://localhost:8761/)
+
+- **RabbitMQ Management Console**  
+  [http://localhost:15672/#/queues](http://localhost:15672/#/queues)
+
+- **Zipkin (Distributed Tracing)**  
+  [http://localhost:9411/zipkin/](http://localhost:9411/zipkin/)
+
+- **Currency Exchange Service**  
+  [http://localhost:8089/currency-exchange/from/USD/to/INR](http://localhost:8089/currency-exchange/from/USD/to/INR)  
+  **Sample Response:**
+  ```json
+  {
+    "id": 1081,
+    "currencyFrom": "USD",
+    "currencyTo": "INR",
+    "conversionMultiple": 65.0
+  }
+
+- **Currency Exchange Service — RabbitMQ Version**  
+  [http://localhost:8089/currency-exchange-rabbit/from/USD/to/INR](http://localhost:8089/currency-exchange-rabbit/from/USD/to/INR)  
+  **Sample Response:**
+  ```json
+  {
+    "id": 1081,
+    "currencyFrom": "USD",
+    "currencyTo": "INR",
+    "conversionMultiple": 65.0
+  }
+- **Currency Conversion Service**  
+  [http://localhost:8100/currency-conversion/from/USD/to/INR/quantity/10](http://localhost:8100/currency-conversion/from/USD/to/INR/quantity/10)  
+  **Sample Response:**
+  ```json
+  {
+    "id": 1081,
+    "from": "USD",
+    "to": "INR",
+    "amount": 10,
+    "conversionMultiple": 65.00,
+    "totalCalculate": 650.00
+  }
+- **Currency Conversion — RabbitMQ Version**  
+  [http://localhost:8100/currency-conversion-from-rabbit/from/USD/to/INR/quantity/10](http://localhost:8100/currency-conversion-from-rabbit/from/USD/to/INR/quantity/10)  
+  **Sample Response:**
+  ```json
+  {
+    "id": 1,
+    "from": "USD",
+    "to": "INR",
+    "amount": 10,
+    "conversionMultiple": 1.1,
+    "totalCalculate": 11.0
+  }
